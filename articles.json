@@ -1,0 +1,26 @@
+{
+  "articles": [
+    {
+      "designation": "dhrttht",
+      "prix_unitaire": 5000,
+      "categorie": "Informatique",
+      "id": 2
+    },
+    {
+      "designation": "jhgjhgjh",
+      "prix_unitaire": 300,
+      "categorie": "Services",
+      "id": 3
+    }
+  ],
+  "categories": [
+    {
+      "id": 1,
+      "nom": "Informatique"
+    },
+    {
+      "id": 2,
+      "nom": "Services"
+    }
+  ]
+}
