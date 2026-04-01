@@ -11,3 +11,12 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.glass-background {
+    background: radial-gradient(circle at top left, #e0e0ff 0%, #f8f9fa 40%, #edeeef 100%);
+    min-height: 100vh;
+}

@@ -1,75 +1,126 @@
-<<<<<<< HEAD
-# Getting Started with Create React App
+﻿# BillManagement
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern React billing management app (Devis/Facturation) with Firebase authentication/real-time database, MUI/Tailwind UI, and PDF invoice generation.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- User auth via Firebase (admin + manager roles).
+- Sidebar navigation and role-based page access.
+- Create, preview, and save invoices in Firebase Realtime Database.
+- Add articles from `json-server` catalog and assign clients from Firebase.
+- Auto-calculated HT, TVA (20%), and TTC totals.
+- Download invoice as PDF using `jspdf` + `jspdf-autotable`.
+- Dashboard, client and article CRUD for admins via `Settings` component.
+- Invoice history and payment tracking via `SuiviFacture`.
+- Responsive UI built with Tailwind / Material Icons.
 
-### `npm start`
+## Tech stack
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- React 19
+- Firebase (Auth + Realtime Database)
+- Tailwind CSS and MUI
+- React Router DOM
+- jspdf and jspdf-autotable
+- recharts (dashboard charts)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Getting started
 
-### `npm test`
+### prerequisites
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- Node.js 18+
+- npm 10+
+- Firebase project (web app)
+- Optional: `json-server` for local article catalog
 
-### `npm run build`
+### Install
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```bash
+npm install
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Environment variables
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Create `.env` at project root with your Firebase config:
 
-### `npm run eject`
+```
+REACT_APP_FIREBASE_API_KEY=...
+REACT_APP_FIREBASE_AUTH_DOMAIN=...
+REACT_APP_FIREBASE_PROJECT_ID=...
+REACT_APP_FIREBASE_STORAGE_BUCKET=...
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=...
+REACT_APP_FIREBASE_APP_ID=...
+REACT_APP_FIREBASE_DATABASE_URL=...
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Start json-server (required for `Facturation` catalogue)
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```bash
+npm install -g json-server
+# from project root or a small data folder
+json-server --watch db.json --port 3001
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+`db.json` example:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```json
+{
+  "articles": [
+    { "id": "a1", "designation": "Service Web", "prix_unitaire": 1200 },
+    { "id": "a2", "designation": "Maintenance", "prix_unitaire": 450 }
+  ],
+  "categories": []
+}
+```
 
-## Learn More
+### Run app
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```bash
+npm start
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Open `http://localhost:3000`.
 
-### Code Splitting
+## Available routes
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- `/` login page
+- UI pages are rendered after auth inside sidebar:
+  - `Dashboard` (admin only)
+  - `Paramètres CRUD` (admin only)
+  - `Créer Facture`
+  - `Suivi & Paiements`
+  - `Catalogue Articles`
+  - `Clients`
 
-### Analyzing the Bundle Size
+## Firebase data model (expected)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+- `/users/{uid}/role` = `Admin` or `Manager`
+- `/clients/{id}` records with `nom`, `adresse`, `email`
+- `/factures/{id}` with invoice metadata and `articles` array
 
-### Making a Progressive Web App
+## Notes
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+- `src/services/jsonService.js` uses `http://localhost:3001` for articles and categories.
+- `src/component/Facturation.js` saves invoices to Firebase and generates a PDF.
+- Auth state from `src/contexts/AuthContext.js` controls role-based nav.
 
-### Advanced Configuration
+## Build
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+```bash
+npm run build
+```
 
-### Deployment
+## Tests
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+```bash
+npm test
+```
 
-### `npm run build` fails to minify
+## Troubleshooting
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-=======
-# BillManagement
-With React in frontend, MUI, json server and firebase, a medium app that manage the bills
->>>>>>> cf40a87157ad7177150dbe3e899b2e4c3b3a54b2
+- Verify Firebase API URL + keys in `.env` and restart app.
+- Ensure `json-server` is running on `http://localhost:3001`.
+- Clear browser storage if stale auth state persists.
+
+## License
+
+MIT

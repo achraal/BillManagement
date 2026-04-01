@@ -1,26 +1,81 @@
 {
   "articles": [
     {
-      "designation": "dhrttht",
-      "prix_unitaire": 5000,
-      "categorie": "Informatique",
-      "id": 2
+      "id": 1,
+      "designation": "Ordinateur portable HP",
+      "prix_unitaire": 7500,
+      "categorie_id": 1
     },
     {
-      "designation": "jhgjhgjh",
-      "prix_unitaire": 300,
-      "categorie": "Services",
-      "id": 3
+      "id": 2,
+      "designation": "Écran 24 pouces Full HD",
+      "prix_unitaire": 1800,
+      "categorie_id": 1
+    },
+    {
+      "id": 3,
+      "designation": "Clavier sans fil Logitech",
+      "prix_unitaire": 450,
+      "categorie_id": 1
+    },
+    {
+      "id": 4,
+      "designation": "Maintenance système (Heure)",
+      "prix_unitaire": 500,
+      "categorie_id": 2
+    },
+    {
+      "id": 5,
+      "designation": "Installation Antivirus",
+      "prix_unitaire": 250,
+      "categorie_id": 2
+    },
+    {
+      "id": 6,
+      "designation": "Disque Dur Externe 1To",
+      "prix_unitaire": 650,
+      "categorie_id": 1
+    },
+    {
+      "id": 7,
+      "designation": "Formation React (Session)",
+      "prix_unitaire": 3000,
+      "categorie_id": 2
+    },
+    {
+      "id": 8,
+      "designation": "Câble réseau RJ45 5m",
+      "prix_unitaire": 80,
+      "categorie_id": 1
+    },
+    {
+      "id": 9,
+      "designation": "Nettoyage Serveur",
+      "prix_unitaire": 1200,
+      "categorie_id": 2
+    },
+    {
+      "id": 10,
+      "designation": "Souris Optique USB",
+      "prix_unitaire": 120,
+      "categorie_id": 1
+    },
+    {
+      "designation": "test",
+      "prix_unitaire": 25,
+      "categorie_id": 1,
+      "id": 11
     }
   ],
   "categories": [
     {
-      "id": 1,
+      "id": "1",
       "nom": "Informatique"
     },
     {
-      "id": 2,
+      "id": "2",
       "nom": "Services"
     }
-  ]
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }
