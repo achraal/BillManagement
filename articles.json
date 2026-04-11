@@ -62,7 +62,7 @@
     },
     {
       "designation": "test",
-      "prix_unitaire": 25,
+      "prix_unitaire": 123450,
       "categorie_id": 1,
       "id": 11
     }

@@ -131,7 +131,6 @@
 // }
 
 // export default Client;
-
 import React, { useState, useEffect } from 'react';
 import { db } from '../services/firebaseConfig';
 import { ref, push, onValue, remove } from "firebase/database";
@@ -145,7 +144,16 @@ function Client() {
     const [showModal, setShowModal] = useState(false);
     const [recherche, setRecherche] = useState("");
 
-    // 1. Chargement des données
+    // --- LOGIQUE DE VALIDATION ---
+    // Format Maroc : 05/06/07 suivi de 8 chiffres
+    const telRegex = /^(05|06|07)\d{8}$/;
+    const isTelValid = tel === "" || telRegex.test(tel);
+    const isAdresseValid = adresse === "" || adresse.length >= 5;
+    const isEmailValid = email === "" || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+
+    // Formulaire complet valide ?
+    const isFormValid = nom.length >= 2 && telRegex.test(tel) && adresse.length >= 5 && isEmailValid;
+
     useEffect(() => {
         const maBase = ref(db, 'clients');
         const unsubscribe = onValue(maBase, (snapshot) => {
@@ -158,32 +166,34 @@ function Client() {
         return () => unsubscribe();
     }, []);
 
-    // 2. Ajouter un client
     const validerFormulaire = (e) => {
         e.preventDefault();
-        push(ref(db, 'clients'), { 
+        if (!isFormValid) return; // Sécurité supplémentaire
+
+        push(ref(db, 'clients'), {
             nom, email, tel, adresse,
-            dateAjout: new Date().toLocaleDateString('fr-FR') 
+            dateAjout: new Date().toLocaleDateString('fr-FR')
         });
+
+        // Reset
         setNom(""); setEmail(""); setTel(""); setAdresse("");
         setShowModal(false);
     };
 
-    // 3. Filtrage pour la recherche
-    const clientsFiltres = tousLesClients.filter(c => 
+    const clientsFiltres = tousLesClients.filter(c =>
         c.nom?.toLowerCase().includes(recherche.toLowerCase()) ||
         c.email?.toLowerCase().includes(recherche.toLowerCase())
     );
 
     return (
         <div className="min-h-screen flex flex-col bg-background font-body">
-            {/* Top Bar (Recherche) - TON CODE ORIGINAL SANS ML-64 */}
+            {/* Header / Search */}
             <header className="sticky top-0 z-40 w-full bg-white/80 backdrop-blur-xl flex items-center justify-between px-8 py-4 border-b border-slate-100/50">
                 <div className="relative w-full max-w-md">
                     <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
-                    <input 
-                        className="w-full bg-surface-container-low border-none rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-slate-400 outline-none" 
-                        placeholder="Rechercher un client..." 
+                    <input
+                        className="w-full bg-surface-container-low border-none rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-slate-400 outline-none"
+                        placeholder="Rechercher un client..."
                         type="text"
                         value={recherche}
                         onChange={(e) => setRecherche(e.target.value)}
@@ -192,7 +202,7 @@ function Client() {
             </header>
 
             <div className="p-8 max-w-7xl mx-auto w-full flex-1">
-                {/* Page Header */}
+                {/* Title & Add Button */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
                     <div>
                         <nav className="flex items-center gap-2 text-xs font-label font-semibold text-slate-400 mb-2 uppercase tracking-widest">
@@ -201,35 +211,35 @@ function Client() {
                             <span className="text-primary">Clients</span>
                         </nav>
                         <h2 className="text-4xl font-headline font-bold text-primary tracking-tight">Répertoire Clients</h2>
-                        <p className="text-slate-500 mt-2 max-w-md">Gérez votre portefeuille client, les coordonnées et la facturation centralisée.</p>
+                        <p className="text-slate-500 mt-2 max-w-md">Gérez votre portefeuille client et la facturation centralisée.</p>
                     </div>
-                    <button 
+                    <button
                         onClick={() => setShowModal(true)}
                         className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-primary-container text-white rounded-lg font-headline font-semibold text-sm shadow-lg hover:shadow-primary/20 transition-all active:scale-95 w-fit"
                     >
-                        <span className="material-symbols-outlined text-sm" style={{fontVariationSettings: "'wght' 700"}}>add</span>
+                        <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'wght' 700" }}>add</span>
                         Ajouter un Client
                     </button>
                 </div>
 
-                {/* Stats Bento Grid */}
+                {/* Stats */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
                     <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-slate-100/50">
                         <p className="text-xs font-label font-bold text-slate-400 uppercase tracking-widest mb-1">Total Clients</p>
                         <h3 className="text-3xl font-headline font-bold text-primary">{tousLesClients.length}</h3>
                     </div>
                     <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-slate-100/50">
-                        <p className="text-xs font-label font-bold text-slate-400 uppercase tracking-widest mb-1">Nouveaux</p>
+                        <p className="text-xs font-label font-bold text-slate-400 uppercase tracking-widest mb-1">Nouveaux (Mois)</p>
                         <h3 className="text-3xl font-headline font-bold text-secondary">3</h3>
                     </div>
                     <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-slate-100/50 bg-gradient-to-br from-primary to-primary-container text-white lg:col-span-1 sm:col-span-2">
-                        <p className="text-xs font-label font-bold text-primary-fixed-dim uppercase tracking-widest mb-1">Activité</p>
-                        <h3 className="text-3xl font-headline font-bold">100%</h3>
-                        <p className="text-[10px] text-primary-fixed-dim/80 mt-4 italic">Base synchronisée Firebase</p>
+                        <p className="text-xs font-label font-bold text-primary-fixed-dim uppercase tracking-widest mb-1">Base de données</p>
+                        <h3 className="text-3xl font-headline font-bold">Live</h3>
+                        <p className="text-[10px] text-primary-fixed-dim/80 mt-4 italic">Synchronisé avec Firebase</p>
                     </div>
                 </div>
 
-                {/* Client List Table */}
+                {/* Table */}
                 <div className="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden border border-slate-100/50">
                     <div className="hidden md:grid grid-cols-12 gap-4 px-8 py-4 bg-surface-container-low/50 text-[10px] font-label font-bold text-slate-400 uppercase tracking-[0.15em]">
                         <div className="col-span-4">Client / Organisation</div>
@@ -238,7 +248,7 @@ function Client() {
                         <div className="col-span-2 text-right">Actions</div>
                     </div>
 
-                    <div className="divide-y divide-slate-100/50 text-on-surface">
+                    <div className="divide-y divide-slate-100/50">
                         {clientsFiltres.map((c) => (
                             <div key={c.id} className="grid grid-cols-1 sm:grid-cols-12 gap-4 px-8 py-6 items-center hover:bg-surface-container-low/20 transition-all group">
                                 <div className="sm:col-span-4 flex items-center gap-4">
@@ -247,22 +257,21 @@ function Client() {
                                     </div>
                                     <div>
                                         <h4 className="text-sm font-headline font-bold text-primary">{c.nom}</h4>
-                                        <p className="text-[10px] text-slate-500 font-body uppercase tracking-tighter">ID: {c.id.substring(1, 8)}</p>
+                                        <p className="text-[10px] text-slate-500 font-body uppercase">ID: {c.id.substring(1, 8)}</p>
                                     </div>
                                 </div>
-                                <div className="sm:col-span-3">
-                                    <p className="text-xs font-medium">{c.email || '—'}</p>
-                                    <p className="text-[11px] text-slate-500 mt-1">{c.tel || '—'}</p>
+                                <div className="sm:col-span-3 text-xs">
+                                    <p className="font-medium">{c.email || '—'}</p>
+                                    <p className="text-slate-500 mt-1">{c.tel || '—'}</p>
                                 </div>
-                                <div className="sm:col-span-3">
-                                    <p className="text-xs text-on-surface line-clamp-1">{c.adresse || 'N/A'}</p>
+                                <div className="sm:col-span-3 text-xs">
+                                    <p className="line-clamp-1">{c.adresse || 'N/A'}</p>
                                     <p className="text-[11px] text-slate-500">Ajouté le {c.dateAjout}</p>
                                 </div>
-                                <div className="sm:col-span-2 flex justify-end gap-2">
-                                    <button 
+                                <div className="sm:col-span-2 flex justify-end">
+                                    <button
                                         onClick={() => remove(ref(db, `clients/${c.id}`))}
-                                        className="p-2 text-slate-300 hover:text-error transition-colors rounded-lg hover:bg-red-50"
-                                        title="Supprimer"
+                                        className="p-2 text-slate-300 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50"
                                     >
                                         <span className="material-symbols-outlined text-lg">delete</span>
                                     </button>
@@ -273,44 +282,87 @@ function Client() {
                 </div>
             </div>
 
-            {/* Modal d'ajout (TON MODAL ORIGINAL) */}
+            {/* Modal with Enhanced Validation */}
             {showModal && (
                 <div className="fixed inset-0 z-[100] bg-slate-950/40 backdrop-blur-sm flex items-center justify-center p-6">
                     <div className="bg-surface-container-lowest w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
                         <div className="px-8 py-6 bg-surface-container-low flex items-center justify-between border-b border-slate-100/50">
                             <div>
                                 <h3 className="text-xl font-headline font-bold text-primary">Nouveau Client</h3>
-                                <p className="text-xs text-slate-500">Enregistrez les détails pour le grand livre.</p>
+                                <p className="text-xs text-slate-500">Validation stricte des coordonnées.</p>
                             </div>
                             <button onClick={() => setShowModal(false)} className="p-2 text-slate-400 hover:text-primary transition-all">
                                 <span className="material-symbols-outlined">close</span>
                             </button>
                         </div>
+
                         <div className="p-8">
                             <form onSubmit={validerFormulaire} className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* NOM */}
                                     <div className="space-y-1">
                                         <label className="text-xs font-label font-bold text-slate-400 uppercase tracking-widest">Nom Complet</label>
-                                        <input required className="w-full bg-surface-container-high border-none rounded-lg px-4 py-3 text-sm text-on-surface outline-none focus:ring-2 focus:ring-primary/20" value={nom} onChange={(e)=>setNom(e.target.value)} type="text" placeholder="ex: Jean Dupont" />
+                                        <input
+                                            required
+                                            className="w-full bg-surface-container-high border-none rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                                            value={nom}
+                                            onChange={(e) => setNom(e.target.value)}
+                                            type="text"
+                                            placeholder="ex: Jean Dupont"
+                                        />
                                     </div>
+                                    {/* EMAIL */}
                                     <div className="space-y-1">
                                         <label className="text-xs font-label font-bold text-slate-400 uppercase tracking-widest">Email</label>
-                                        <input className="w-full bg-surface-container-high border-none rounded-lg px-4 py-3 text-sm text-on-surface outline-none focus:ring-2 focus:ring-primary/20" value={email} onChange={(e)=>setEmail(e.target.value)} type="email" placeholder="contact@client.com" />
+                                        <input
+                                            className={`w-full bg-surface-container-high border-2 rounded-lg px-4 py-3 text-sm outline-none transition-all ${!isEmailValid ? 'border-red-400' : 'border-transparent focus:border-primary/20'}`}
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            type="email"
+                                            placeholder="contact@client.com"
+                                        />
                                     </div>
                                 </div>
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* TÉLÉPHONE */}
                                     <div className="space-y-1">
-                                        <label className="text-xs font-label font-bold text-slate-400 uppercase tracking-widest">Téléphone</label>
-                                        <input className="w-full bg-surface-container-high border-none rounded-lg px-4 py-3 text-sm text-on-surface outline-none focus:ring-2 focus:ring-primary/20" value={tel} onChange={(e)=>setTel(e.target.value)} type="tel" placeholder="+212 ..." />
+                                        <label className="text-xs font-label font-bold text-slate-400 uppercase tracking-widest">Téléphone (Maroc)</label>
+                                        <input
+                                            required
+                                            className={`w-full bg-surface-container-high border-2 rounded-lg px-4 py-3 text-sm outline-none transition-all ${!isTelValid ? 'border-red-400' : 'border-transparent focus:border-primary/20'}`}
+                                            value={tel}
+                                            onChange={(e) => setTel(e.target.value)}
+                                            type="tel"
+                                            placeholder="0612345678"
+                                        />
+                                        {!isTelValid && <p className="text-[10px] text-red-500 font-bold uppercase">Format invalide (ex: 06...)</p>}
                                     </div>
+
+                                    {/* ADRESSE */}
                                     <div className="space-y-1">
-                                        <label className="text-xs font-label font-bold text-slate-400 uppercase tracking-widest">Adresse</label>
-                                        <input className="w-full bg-surface-container-high border-none rounded-lg px-4 py-3 text-sm text-on-surface outline-none focus:ring-2 focus:ring-primary/20" value={adresse} onChange={(e)=>setAdresse(e.target.value)} type="text" placeholder="Ville, Quartier..." />
+                                        <label className="text-xs font-label font-bold text-slate-400 uppercase tracking-widest">Adresse Siège</label>
+                                        <input
+                                            required
+                                            className={`w-full bg-surface-container-high border-2 rounded-lg px-4 py-3 text-sm outline-none transition-all ${!isAdresseValid ? 'border-red-400' : 'border-transparent focus:border-primary/20'}`}
+                                            value={adresse}
+                                            onChange={(e) => setAdresse(e.target.value)}
+                                            type="text"
+                                            placeholder="Rue, Ville, CP..."
+                                        />
+                                        {!isAdresseValid && <p className="text-[10px] text-red-500 font-bold uppercase">Adresse trop courte</p>}
                                     </div>
                                 </div>
+
                                 <div className="pt-4 flex items-center justify-end gap-4 border-t border-slate-100/50">
                                     <button onClick={() => setShowModal(false)} className="px-6 py-2.5 text-slate-500 font-headline font-semibold text-sm hover:bg-surface-container transition-colors rounded-lg" type="button">Annuler</button>
-                                    <button className="px-8 py-2.5 bg-primary text-white font-headline font-semibold text-sm rounded-lg shadow-lg hover:shadow-primary/20 transition-all" type="submit">Créer le client</button>
+                                    <button
+                                        disabled={!isFormValid}
+                                        className={`px-8 py-2.5 font-headline font-semibold text-sm rounded-lg shadow-lg transition-all ${isFormValid ? 'bg-primary text-white hover:shadow-primary/20' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+                                        type="submit"
+                                    >
+                                        Créer le client
+                                    </button>
                                 </div>
                             </form>
                         </div>

@@ -148,41 +148,41 @@ function Settings() {
     }, []);
 
     const chargerDonnees = async () => {
-    setLoading(true);
-    try {
-        const dataArticles = await jsonService.getArticles();
-        // Vérifie si c'est bien un tableau, sinon met un tableau vide
-        setArticles(Array.isArray(dataArticles) ? dataArticles : []);
-        
-        const resCat = await fetch('http://localhost:3001/categories');
-        const dataCat = await resCat.json();
+        setLoading(true);
+        try {
+            const dataArticles = await jsonService.getArticles();
+            // Vérifie si c'est bien un tableau, sinon met un tableau vide
+            setArticles(Array.isArray(dataArticles) ? dataArticles : []);
 
-        // Sécurité CRITIQUE : on vérifie que c'est un tableau
-        if (Array.isArray(dataCat)) {
-            setCategories(dataCat);
-        } else if (dataCat && dataCat.categories) { 
-            // Au cas où json-server renvoie l'objet complet
-            setCategories(dataCat.categories);
-        } else {
-            setCategories([]);
+            const resCat = await fetch('http://localhost:3001/categories');
+            const dataCat = await resCat.json();
+
+            // Sécurité CRITIQUE : on vérifie que c'est un tableau
+            if (Array.isArray(dataCat)) {
+                setCategories(dataCat);
+            } else if (dataCat && dataCat.categories) {
+                // Au cas où json-server renvoie l'objet complet
+                setCategories(dataCat.categories);
+            } else {
+                setCategories([]);
+            }
+        } catch (err) {
+            console.error("Erreur de synchronisation:", err);
+            setCategories([]); // Éviter que l'UI plante
+        } finally {
+            setLoading(false);
         }
-    } catch (err) {
-        console.error("Erreur de synchronisation:", err);
-        setCategories([]); // Éviter que l'UI plante
-    } finally {
-        setLoading(false);
-    }
-};
+    };
 
     const preparerEdition = (article) => {
-    setEditionId(article.id);
-    setNouvelArticle({
-        designation: article.designation,
-        prix_unitaire: article.prix_unitaire,
-        categorie_id: article.categorie_id || '' // Utilise categorie_id ici
-    });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-};
+        setEditionId(article.id);
+        setNouvelArticle({
+            designation: article.designation,
+            prix_unitaire: article.prix_unitaire,
+            categorie_id: article.categorie_id || '' // Utilise categorie_id ici
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
     const annulerEdition = () => {
         setEditionId(null);
@@ -190,42 +190,42 @@ function Settings() {
     };
 
     const soumettreFormulaire = async (e) => {
-    if (e) e.preventDefault();
-    if (!nouvelArticle.designation || !nouvelArticle.prix_unitaire) return;
+        if (e) e.preventDefault();
+        if (!nouvelArticle.designation || !nouvelArticle.prix_unitaire) return;
 
-    // 1. On prépare l'objet de base (sans l'ID pour l'instant)
-    const articleData = {
-        designation: nouvelArticle.designation,
-        prix_unitaire: Number(nouvelArticle.prix_unitaire),
-        categorie_id: Number(nouvelArticle.categorie_id)
-    };
+        // 1. On prépare l'objet de base (sans l'ID pour l'instant)
+        const articleData = {
+            designation: nouvelArticle.designation,
+            prix_unitaire: Number(nouvelArticle.prix_unitaire),
+            categorie_id: Number(nouvelArticle.categorie_id)
+        };
 
-    // 2. Si c'est une création (pas d'editionId), on calcule le nouvel ID numérique
-    if (!editionId) {
-        const dernierId = articles.length > 0 
-            ? Math.max(...articles.map(a => Number(a.id))) 
-            : 0;
-        articleData.id = (dernierId + 1)
-    }
-
-    const url = editionId ? `http://localhost:3001/articles/${editionId}` : 'http://localhost:3001/articles';
-    const method = editionId ? 'PUT' : 'POST';
-
-    try {
-        const response = await fetch(url, {
-            method: method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(articleData)
-        });
-
-        if (response.ok) {
-            annulerEdition();
-            chargerDonnees();
+        // 2. Si c'est une création (pas d'editionId), on calcule le nouvel ID numérique
+        if (!editionId) {
+            const dernierId = articles.length > 0
+                ? Math.max(...articles.map(a => Number(a.id)))
+                : 0;
+            articleData.id = (dernierId + 1)
         }
-    } catch (err) {
-        alert("Erreur lors de la sauvegarde.");
-    }
-};
+
+        const url = editionId ? `http://localhost:3001/articles/${editionId}` : 'http://localhost:3001/articles';
+        const method = editionId ? 'PUT' : 'POST';
+
+        try {
+            const response = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(articleData)
+            });
+
+            if (response.ok) {
+                annulerEdition();
+                chargerDonnees();
+            }
+        } catch (err) {
+            alert("Erreur lors de la sauvegarde.");
+        }
+    };
 
     const supprimerArticle = async (id) => {
         if (window.confirm("Supprimer cet article définitivement ?")) {
@@ -252,7 +252,7 @@ function Settings() {
                             Discard Edition
                         </button>
                     )}
-                    <button 
+                    <button
                         onClick={soumettreFormulaire}
                         disabled={!nouvelArticle.designation || !nouvelArticle.prix_unitaire}
                         className="px-6 py-2 bg-primary disabled:bg-slate-300 text-white rounded-xl text-sm font-headline font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
@@ -264,7 +264,7 @@ function Settings() {
 
             <section className="p-10 max-w-7xl mx-auto w-full space-y-10">
                 <div className="grid grid-cols-12 gap-8">
-                    
+
                     {/* LEFT: Formulaire */}
                     <div className="col-span-12 lg:col-span-4 space-y-6">
                         <div className={`bg-white p-8 rounded-2xl shadow-sm border-t-4 transition-all ${editionId ? 'border-amber-500 shadow-amber-100' : 'border-primary'}`}>
@@ -280,40 +280,40 @@ function Settings() {
                             <form onSubmit={soumettreFormulaire} className="space-y-6">
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Désignation</label>
-                                    <input 
+                                    <input
                                         className="w-full bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-primary/20 text-sm py-3.5 px-4 transition-all"
                                         placeholder="ex: Laptop Dell XPS"
                                         value={nouvelArticle.designation}
-                                        onChange={e => setNouvelArticle({...nouvelArticle, designation: e.target.value})}
-                                        required 
+                                        onChange={e => setNouvelArticle({ ...nouvelArticle, designation: e.target.value })}
+                                        required
                                     />
                                 </div>
 
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Prix HT (DH)</label>
-                                    <input 
+                                    <input
                                         type="number"
                                         className="w-full bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-primary/20 text-sm py-3.5 px-4 font-bold"
                                         placeholder="0.00"
                                         value={nouvelArticle.prix_unitaire}
-                                        onChange={e => setNouvelArticle({...nouvelArticle, prix_unitaire: e.target.value})}
-                                        required 
+                                        onChange={e => setNouvelArticle({ ...nouvelArticle, prix_unitaire: e.target.value })}
+                                        required
                                     />
                                 </div>
 
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Catégorie</label>
-                                    <select 
+                                    <select
                                         className="w-full bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-primary/20 text-sm py-3.5 px-4 appearance-none cursor-pointer"
                                         value={nouvelArticle.categorie_id}
-                                        onChange={e => setNouvelArticle({...nouvelArticle, categorie_id: Number(e.target.value)})}
+                                        onChange={e => setNouvelArticle({ ...nouvelArticle, categorie_id: Number(e.target.value) })}
                                     >
                                         <option value="">Sélectionner...</option>
                                         {categories.map(c => (
-                                            <option key={c.id} value={c.id}>{c.nom}</option> 
+                                            <option key={c.id} value={c.id}>{c.nom}</option>
                                         ))}
                                     </select>
-                                    
+
                                 </div>
                             </form>
                         </div>
@@ -373,14 +373,14 @@ function Settings() {
                                                 </td>
                                                 <td className="px-8 py-5 text-right">
                                                     <div className="flex justify-end gap-2 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <button 
+                                                        <button
                                                             onClick={() => preparerEdition(a)}
                                                             className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all"
                                                             title="Modifier"
                                                         >
                                                             <span className="material-symbols-outlined text-lg">edit_square</span>
                                                         </button>
-                                                        <button 
+                                                        <button
                                                             onClick={() => supprimerArticle(a.id)}
                                                             className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
                                                             title="Supprimer"
